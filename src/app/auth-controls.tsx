@@ -7,23 +7,48 @@ import { authClient } from "../lib/auth/client";
 
 export function SignInButton() {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   return (
-    <button
-      type="button"
-      disabled={isLoading}
-      onClick={async () => {
-        setIsLoading(true);
-        // Redirects to GitHub, then back to the callback URL.
-        await authClient.signIn.social({
-          provider: "github",
-          callbackURL: "/",
-        });
-      }}
-      className="flex h-11 items-center justify-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background transition-colors hover:bg-[#383838] disabled:opacity-60 dark:hover:bg-[#ccc]"
-    >
-      {isLoading ? "Redirecting…" : "Sign in with GitHub"}
-    </button>
+    <div className="flex flex-col items-center gap-2">
+      <button
+        type="button"
+        disabled={isLoading}
+        onClick={async () => {
+          setIsLoading(true);
+          setError(null);
+          try {
+            // Redirects to GitHub, then back to the callback URL.
+            const { error } = await authClient.signIn.social({
+              provider: "github",
+              callbackURL: "/",
+            });
+            if (error) {
+              setError(
+                error.message ||
+                  "Could not start GitHub sign-in. Please try again.",
+              );
+              setIsLoading(false);
+            }
+          } catch (cause) {
+            setError(
+              cause instanceof Error
+                ? cause.message
+                : "Could not start GitHub sign-in. Please try again.",
+            );
+            setIsLoading(false);
+          }
+        }}
+        className="flex h-11 items-center justify-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background transition-colors hover:bg-[#383838] disabled:opacity-60 dark:hover:bg-[#ccc]"
+      >
+        {isLoading ? "Redirecting…" : "Sign in with GitHub"}
+      </button>
+      {error ? (
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
