@@ -10,11 +10,13 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "auth:generate-schema": "auth generate --output ./src/db/schemas/auth.ts --config ./src/lib/auth/config.ts --yes"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
     "@t3-oss/env-nextjs": "^0.13.11",
+    "better-auth": "^1.7.0-rc.6",
     "dotenv": "^18.0.7",
     "drizzle-orm": "^1.0.0-rc.4",
     "next": "16.4.0",
@@ -27,9 +29,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "auth": "^1.7.0-rc.6",
     "drizzle-kit": "^1.0.0-rc.4",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "^14.2.35",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
