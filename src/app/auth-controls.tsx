@@ -5,6 +5,10 @@ import { useState } from "react";
 
 import { authClient } from "../lib/auth/client";
 
+/**
+ * Renders a GitHub sign-in button that redirects to the home page after sign-in.
+ * Displays sign-in errors and re-enables the button when an attempt fails.
+ */
 export function SignInButton() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
