@@ -11,7 +11,8 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
-    "auth:generate-schema": "auth generate --output ./src/db/schemas/auth.ts --config ./src/lib/auth/config.ts --yes"
+    "auth:generate-schema": "auth generate --output ./src/db/schemas/auth.ts --config ./src/lib/auth/config.ts --yes",
+    "test": "vitest"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
@@ -23,6 +24,7 @@
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "rss-parser": "^3.13.0",
     "workflow": "^5.2.2",
     "zod": "^4.6.7"
   },
@@ -37,6 +39,8 @@
     "eslint-config-next": "^16.4.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
   }
 }

@@ -15,7 +15,4 @@ export type ExtractedArticle = {
   // Raw HTML of the post body (the `.entry-content` container).
   contentHtml: string;
   thumbnailUrl: string | null;
-  // Plain-text chunks, split on section headings. The first chunk holds any
-  // text that appears before the first heading.
-  chunks: string[];
 };
