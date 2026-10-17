@@ -8,6 +8,7 @@ import { chunk } from "../db/schemas/chunks";
 import { extractArticle } from "../lib/fifteensquared/extract";
 import { chunkArticles } from "../lib/chunking/chunkArticles";
 import { batchExec } from "./utils/batchExec";
+import { embedChunks } from "../lib/embedding/embed-chunks";
 
 const RSS_URL = "https://fifteensquared.net/feed/";
 
@@ -65,6 +66,7 @@ async function ingestArticleStep(feedItem: Parser.Item) {
   }
 
   const chunks = chunkArticles(contentHtml);
+  const embeddings = await embedChunks(chunks);
 
   const [contentRow] = await db
     .insert(content)
@@ -88,11 +90,11 @@ async function ingestArticleStep(feedItem: Parser.Item) {
 
   if (chunks.length > 0) {
     await db.insert(chunk).values(
-      chunks.map((text) => ({
+      chunks.map((text, i) => ({
         contentId: contentRow.id,
         startPosition: null,
-        embedding: null,
-        text,
+        embedding: embeddings[i],
+        text: text,
       })),
     );
   }

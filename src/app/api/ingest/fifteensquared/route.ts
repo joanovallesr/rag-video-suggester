@@ -6,7 +6,7 @@ import { ingestBlogArticlesWorkflow } from "../../../../workflows/ingestBlogArti
  * Trigger the Fifteensquared blog-article ingestion workflow. The workflow
  * discovers new articles from the RSS feed and ingests each one.
  */
-export async function POST() {
+export async function GET() {
   const run = await start(ingestBlogArticlesWorkflow, []);
 
   return NextResponse.json({ runId: run.runId }, { status: 202 });

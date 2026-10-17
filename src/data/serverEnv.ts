@@ -13,6 +13,8 @@ export const serverEnv = createEnv({
     GITHUB_CLIENT_SECRET: z.string().min(1),
     // Comma-separated list of extra allowed origins (optional)
     BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
+    // Embedding provider and local embedding base URL
+    OPENAI_API_KEY: z.string().min(1)
   },
   experimental__runtimeEnv: process.env,
   emptyStringAsUndefined: true,
