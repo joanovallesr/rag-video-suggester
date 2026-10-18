@@ -68,34 +68,72 @@ async function ingestArticleStep(feedItem: Parser.Item) {
   const chunks = chunkArticles(contentHtml);
   const embeddings = await embedChunks(chunks);
 
-  const [contentRow] = await db
-    .insert(content)
-    .values({
-      type: "article",
-      title: item.title,
-      description: item.description,
-      publishDate: item.pubDate.toISOString().slice(0, 10),
-      url: item.link,
-      thumbnailUrl,
-      content: contentHtml,
-    })
-    .onConflictDoNothing()
-    .returning({ id: content.id });
-
-  if (contentRow?.id == null) {
-    throw new FatalError(
-      `Duplicate detected and failed to insert - ${item.link}`,
-    );
-  }
+  const contentId = crypto.randomUUID();
+  const contentValues = {
+    id: contentId,
+    type: "article" as const,
+    title: item.title,
+    description: item.description,
+    publishDate: item.pubDate.toISOString().slice(0, 10),
+    url: item.link,
+    thumbnailUrl,
+    content: contentHtml,
+  };
 
   if (chunks.length > 0) {
-    await db.insert(chunk).values(
-      chunks.map((text, i) => ({
-        contentId: contentRow.id,
-        startPosition: null,
-        embedding: embeddings[i],
-        text: text,
-      })),
-    );
+    try {
+      const [[contentRow]] = await db.batch([
+        db
+          .insert(content)
+          .values(contentValues)
+          .onConflictDoNothing()
+          .returning({ id: content.id }),
+        db.insert(chunk).values(
+          chunks.map((text, i) => ({
+            contentId,
+            startPosition: null,
+            embedding: embeddings[i],
+            text: text,
+          })),
+        ),
+      ] as const);
+
+      if (contentRow?.id == null) {
+        throw new FatalError(
+          `Duplicate detected and failed to insert - ${item.link}`,
+        );
+      }
+    } catch (error) {
+      if (error instanceof FatalError) throw error;
+
+      // A duplicate URL makes the content insert a no-op, so the chunk insert
+      // fails its foreign key and rolls back the batch. Report that as a
+      // duplicate instead of retrying the step.
+      const [existingContent] = await db
+        .select({ id: content.id })
+        .from(content)
+        .where(eq(content.url, item.link))
+        .limit(1);
+
+      if (existingContent) {
+        throw new FatalError(
+          `Duplicate detected and failed to insert - ${item.link}`,
+        );
+      }
+
+      throw error;
+    }
+  } else {
+    const [contentRow] = await db
+      .insert(content)
+      .values(contentValues)
+      .onConflictDoNothing()
+      .returning({ id: content.id });
+
+    if (contentRow?.id == null) {
+      throw new FatalError(
+        `Duplicate detected and failed to insert - ${item.link}`,
+      );
+    }
   }
 }

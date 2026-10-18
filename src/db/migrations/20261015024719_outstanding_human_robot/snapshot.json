@@ -604,7 +604,7 @@
       "table": "chunk"
     },
     {
-      "type": "vector(768)",
+      "type": "vector(1536)",
       "typeSchema": null,
       "notNull": false,
       "dimensions": 0,

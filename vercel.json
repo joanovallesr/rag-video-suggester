@@ -1,7 +1,7 @@
 {
     "crons" : [
         {
-            "path": "/api/workflows/ingest-blog-articles",
+            "path": "/api/ingest/fifteensquared",
             "schedule": "0 0 * * *"
         }
     ]

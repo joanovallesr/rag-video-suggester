@@ -23,7 +23,7 @@ export const chunk = pgTable(
       .references(() => content.id, { onDelete: "cascade" }),
     // Only used for video chunks (caption start time); null for articles.
     startPosition: integer("start_position"),
-    embedding: vector("embedding", { dimensions: 768 }),
+    embedding: vector("embedding", { dimensions: 1536 }),
     text: text("text").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()

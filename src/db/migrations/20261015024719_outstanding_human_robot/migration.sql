@@ -4,7 +4,7 @@ CREATE TABLE "chunk" (
 	"id" uuid PRIMARY KEY DEFAULT pg_catalog.gen_random_uuid(),
 	"content_id" uuid NOT NULL,
 	"start_position" integer,
-	"embedding" vector(768),
+	"embedding" vector(1536),
 	"text" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
