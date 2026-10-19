@@ -13,6 +13,10 @@ export const serverEnv = createEnv({
     GITHUB_CLIENT_SECRET: z.string().min(1),
     // Comma-separated list of extra allowed origins (optional)
     BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
+    // OpenAI API key used to generate chunk embeddings
+    OPENAI_API_KEY: z.string().min(1),
+    // Secret used by Vercel Cron to authenticate ingestion requests
+    CRON_SECRET: z.string().min(1)
   },
   experimental__runtimeEnv: process.env,
   emptyStringAsUndefined: true,
