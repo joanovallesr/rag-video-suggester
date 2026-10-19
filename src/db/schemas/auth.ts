@@ -53,7 +53,7 @@ export const account = pgTable(
     id: uuid("id")
       .default(sql`pg_catalog.gen_random_uuid()`)
       .primaryKey(),
-    issuer: text("issuer").notNull(),
+    issuer: text("issuer"),
     accountId: text("account_id").notNull(),
     providerId: text("provider_id").notNull(),
     userId: uuid("user_id")
