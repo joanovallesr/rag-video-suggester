@@ -75,7 +75,7 @@ export function SignOutButton() {
         });
         setIsLoading(false);
       }}
-      className="flex h-11 items-center justify-center rounded-full border border-solid border-black/[.08] px-6 text-sm font-medium transition-colors hover:border-transparent hover:bg-black/[.04] disabled:opacity-60 dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
+      className="flex h-11 items-center justify-center rounded-full border border-solid border-white/15 px-6 text-sm font-medium transition-colors hover:border-white/25 hover:bg-white/10 disabled:opacity-60"
     >
       {isLoading ? "Signing out…" : "Sign out"}
     </button>
