@@ -1,9 +1,13 @@
 import Image from "next/image";
 import { headers } from "next/headers";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 
 import { auth } from "../lib/auth/config";
 import { SignInButton, SignOutButton } from "./auth-controls";
+
+const getSession = cache(async () => {
+  return auth.api.getSession({ headers: await headers() });
+});
 
 export default function Home() {
   return (
@@ -13,9 +17,9 @@ export default function Home() {
           <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
             RAG Video Suggester
           </h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Sign in to get started.
-          </p>
+          <Suspense fallback={null}>
+            <SignInPrompt />
+          </Suspense>
         </div>
 
         <Suspense
@@ -30,8 +34,22 @@ export default function Home() {
   );
 }
 
+async function SignInPrompt() {
+  const session = await getSession();
+
+  if (session) {
+    return null;
+  }
+
+  return (
+    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      Sign in to get started.
+    </p>
+  );
+}
+
 async function AuthSection() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
 
   if (!session) {
     return <SignInButton />;
