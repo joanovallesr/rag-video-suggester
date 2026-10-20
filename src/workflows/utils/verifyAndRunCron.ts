@@ -13,5 +13,8 @@ export async function verifyAndRunCron(request: NextRequest, runCron: () => Prom
 
   const run = await start(runCron);
  
-  return Response.json({ message: "Cron started", runId: run.runId });
+  return Response.json(
+    { message: "Cron started", runId: run.runId },
+    { status: 202 },
+  );
 }

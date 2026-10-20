@@ -1,5 +1,4 @@
 import {
-  and,
   asc,
   cosineDistance,
   eq,
@@ -34,20 +33,35 @@ export async function searchContent(
 
   const distance = cosineDistance(chunk.embedding, embedding);
 
-  // Drop weak chunks before ranking, then keep the best chunk per content.
-  const bestChunks = db
+  // Order by distance in the inner query so pgvector can use an index and the
+  // sort is bounded. The distance threshold and per-content deduplication are
+  // applied in the outer query, over that limited set of candidates.
+  const candidates = db
     .select({
       contentId: chunk.contentId,
       distance: sql<number>`${distance}`.as("distance"),
       startPosition: chunk.startPosition,
       text: chunk.text,
-      rank: sql<number>`row_number() over (
-        partition by ${chunk.contentId}
-        order by ${distance}
-      )`.as("rank"),
     })
     .from(chunk)
-    .where(and(isNotNull(chunk.embedding), lte(distance, MAX_DISTANCE)))
+    .where(isNotNull(chunk.embedding))
+    .orderBy(asc(distance))
+    .limit(MAX_RESULTS * 10)
+    .as("candidates");
+
+  const bestChunks = db
+    .select({
+      contentId: candidates.contentId,
+      distance: candidates.distance,
+      startPosition: candidates.startPosition,
+      text: candidates.text,
+      rank: sql<number>`row_number() over (
+        partition by ${candidates.contentId}
+        order by ${candidates.distance}
+      )`.as("rank"),
+    })
+    .from(candidates)
+    .where(lte(candidates.distance, MAX_DISTANCE))
     .as("best_chunks");
 
   const rows = await db
