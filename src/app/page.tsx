@@ -1,12 +1,16 @@
 import Image from "next/image";
 import { headers } from "next/headers";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 
 import { auth } from "../lib/auth/config";
 import { SignInButton, SignOutButton } from "./auth-controls";
 import { SearchPanel } from "./search";
 
 type HeaderUser = { name: string; image?: string | null } | null;
+
+const getSession = cache(async () => {
+  return auth.api.getSession({ headers: await headers() });
+});
 
 export default function Home() {
   return (
