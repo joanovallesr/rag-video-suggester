@@ -13,3 +13,8 @@ export async function embedChunks(texts: string[]) {
 
     return result.embeddings;
 }
+
+export async function embedQuery(text: string) {
+    const [embedding] = await embedChunks([text]);
+    return embedding;
+}
