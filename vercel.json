@@ -3,6 +3,10 @@
         {
             "path": "/api/ingest/fifteensquared",
             "schedule": "0 0 * * *"
+        },
+        {
+            "path": "/api/ingest/youtube",
+            "schedule": "0 1 * * *"
         }
     ]
 }

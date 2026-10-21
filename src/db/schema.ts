@@ -1,3 +1,4 @@
 export * from "./schemas/auth"
 export * from "./schemas/content"
 export * from "./schemas/chunks"
+export * from "./schemas/skippedVideo"

@@ -22,7 +22,7 @@ export const content = pgTable("content", {
   url: text("url").notNull().unique(),
   thumbnailUrl: text("thumbnail_url"),
   type: contentTypeEnum("type").notNull(),
-  // Raw HTML of the article post body.
+  // Raw source body: article post HTML, or the plain transcript for videos.
   content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

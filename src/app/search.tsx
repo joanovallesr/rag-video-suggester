@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 
+import { buildResultUrl } from "../lib/search/resultUrl";
 import { formatMatchPercent } from "../lib/search/similarity";
 import type { ContentSearchResult } from "../lib/search/types";
 import { searchContentAction } from "./actions";
@@ -154,7 +155,7 @@ function SearchResultCard({ result }: { result: ContentSearchResult }) {
   return (
     <li>
       <a
-        href={result.url}
+        href={buildResultUrl(result.url, result.type, result.startPosition)}
         target="_blank"
         rel="noreferrer"
         className="group flex gap-5 rounded-xl border border-white/10 bg-zinc-900/60 p-4 transition-colors hover:border-white/20 hover:bg-zinc-900"
@@ -193,9 +194,25 @@ function SearchResultCard({ result }: { result: ContentSearchResult }) {
               {result.title}
             </h2>
             <p className="mt-1 line-clamp-2 text-sm text-zinc-400">
-              {result.description}
+              {result.type === "video" ? result.text : result.description}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+              {result.type === "video" && result.startPosition !== null ? (
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-400/10 px-2 py-1 text-emerald-300">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    className="h-3.5 w-3.5"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="m10 8 6 4-6 4V8Z" />
+                  </svg>
+                  {formatTimestamp(result.startPosition)}
+                </span>
+              ) : null}
               <span className="inline-flex items-center gap-1.5 rounded-md bg-white/5 px-2 py-1 text-zinc-300">
                 <svg
                   aria-hidden="true"
@@ -230,6 +247,18 @@ function SearchResultCard({ result }: { result: ContentSearchResult }) {
       </a>
     </li>
   );
+}
+
+function formatTimestamp(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(seconds / 3_600);
+  const minutes = Math.floor((seconds % 3_600) / 60);
+  const remainder = seconds % 60;
+  const pad = (value: number) => String(value).padStart(2, "0");
+
+  return hours > 0
+    ? `${hours}:${pad(minutes)}:${pad(remainder)}`
+    : `${minutes}:${pad(remainder)}`;
 }
 
 function formatPublishDate(value: string): string {

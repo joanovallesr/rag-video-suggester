@@ -15,6 +15,8 @@ export const serverEnv = createEnv({
     BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
     // OpenAI API key used to generate chunk embeddings
     OPENAI_API_KEY: z.string().min(1),
+    // YouTube Data API v3 key used to discover uploads (public data, no OAuth)
+    YOUTUBE_API_KEY: z.string().min(1),
     // Secret used by Vercel Cron to authenticate ingestion requests
     CRON_SECRET: z.string().min(1)
   },
