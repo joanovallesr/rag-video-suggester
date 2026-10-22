@@ -4,6 +4,26 @@ import type { SkipReason, VideoCandidate } from "./types";
 /** Shorter uploads are treated as shorts and kept out of the corpus. */
 export const MIN_VIDEO_SECONDS = 60;
 
+/**
+ * How long a video without captions stays retryable. Auto-captions are often
+ * generated after the upload appears, so ledgering "no captions" immediately
+ * would make the video permanently invisible to discovery.
+ */
+export const CAPTION_GRACE_MS = 48 * 60 * 60 * 1_000;
+
+export function shouldDeferSkip(
+  reason: SkipReason,
+  publishedAt: string,
+  now: number,
+): boolean {
+  if (reason !== "no_captions") return false;
+
+  const published = Date.parse(publishedAt);
+  if (!Number.isFinite(published)) return false;
+
+  return now - published < CAPTION_GRACE_MS;
+}
+
 const ISO_DURATION =
   /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/;
 

@@ -5,6 +5,7 @@ import {
   classifyVideo,
   parseIsoDuration,
   pickThumbnail,
+  shouldDeferSkip,
   videoIdFromUrl,
 } from "./video";
 
@@ -193,5 +194,30 @@ describe("classifyVideo", () => {
     if (result.status === "candidate") {
       expect(result.video.description).toBe("");
     }
+  });
+});
+
+describe("shouldDeferSkip", () => {
+  const now = Date.parse("2026-10-21T12:00:00Z");
+  const hoursAgo = (hours: number) =>
+    new Date(now - hours * 60 * 60 * 1_000).toISOString();
+
+  it("defers a fresh video without captions so it is retried", () => {
+    expect(shouldDeferSkip("no_captions", hoursAgo(1), now)).toBe(true);
+    expect(shouldDeferSkip("no_captions", hoursAgo(47), now)).toBe(true);
+  });
+
+  it("ledgers a video without captions once the grace period passes", () => {
+    expect(shouldDeferSkip("no_captions", hoursAgo(49), now)).toBe(false);
+  });
+
+  it("never defers terminal reasons other than missing captions", () => {
+    expect(shouldDeferSkip("zero_chunks", hoursAgo(1), now)).toBe(false);
+    expect(shouldDeferSkip("too_short", hoursAgo(1), now)).toBe(false);
+    expect(shouldDeferSkip("unavailable", hoursAgo(1), now)).toBe(false);
+  });
+
+  it("ledgers when the publish date cannot be parsed", () => {
+    expect(shouldDeferSkip("no_captions", "not a date", now)).toBe(false);
   });
 });

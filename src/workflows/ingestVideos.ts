@@ -14,7 +14,7 @@ import type {
   SkippedVideo,
   VideoCandidate,
 } from "../lib/youtube/types";
-import { videoIdFromUrl } from "../lib/youtube/video";
+import { shouldDeferSkip, videoIdFromUrl } from "../lib/youtube/video";
 import { batchExec } from "./utils/batchExec";
 
 /**
@@ -91,13 +91,19 @@ async function recordSkippedVideo(videoId: string, reason: SkipReason) {
 async function ingestVideoStep(video: VideoCandidate): Promise<IngestOutcome> {
   "use step";
 
-  const transcript = await getCaptionCues(video.videoId);
+  const transcript = await getCaptionCues(video.videoId, video.durationSeconds);
 
   if (transcript.status === "blocked") {
     return { status: "blocked" };
   }
 
   if (transcript.status !== "ok") {
+    // Fresh uploads may not have captions yet. Leave them out of the ledger so
+    // later runs retry instead of excluding the video forever.
+    if (shouldDeferSkip(transcript.status, video.publishedAt, Date.now())) {
+      return { status: "skipped", reason: transcript.status };
+    }
+
     await recordSkippedVideo(video.videoId, transcript.status);
     return { status: "skipped", reason: transcript.status };
   }
