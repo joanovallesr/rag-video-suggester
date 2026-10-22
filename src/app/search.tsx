@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 
+import { decodeHtmlEntities } from "../lib/search/decodeEntities";
 import { buildResultUrl } from "../lib/search/resultUrl";
 import { formatMatchPercent } from "../lib/search/similarity";
 import type { ContentSearchResult } from "../lib/search/types";
@@ -79,7 +80,7 @@ export function SearchPanel({ isSignedIn }: SearchPanelProps) {
               disabled={!isSignedIn || isSearching}
               placeholder={
                 isSignedIn
-                  ? "I want to learn how to use react hooks"
+                  ? "Search crosswords clues, wordplay, and solve walkthroughs..."
                   : "Sign in to search"
               }
               className="h-14 w-full rounded-xl border border-white/10 bg-zinc-900 pr-4 pl-12 text-base text-zinc-100 placeholder:text-zinc-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
@@ -194,7 +195,9 @@ function SearchResultCard({ result }: { result: ContentSearchResult }) {
               {result.title}
             </h2>
             <p className="mt-1 line-clamp-2 text-sm text-zinc-400">
-              {result.type === "video" ? result.text : result.description}
+              {decodeHtmlEntities(
+                result.type === "video" ? result.text : result.description,
+              )}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
               {result.type === "video" && result.startPosition !== null ? (
