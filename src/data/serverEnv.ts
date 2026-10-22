@@ -18,7 +18,10 @@ export const serverEnv = createEnv({
     // YouTube Data API v3 key used to discover uploads (public data, no OAuth)
     YOUTUBE_API_KEY: z.string().min(1),
     // Secret used by Vercel Cron to authenticate ingestion requests
-    CRON_SECRET: z.string().min(1)
+    CRON_SECRET: z.string().min(1),
+    // Search rate limiting: max searches per user within a rolling window.
+    RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive(),
+    RATE_LIMIT_WINDOW_HOURS: z.coerce.number().positive()
   },
   experimental__runtimeEnv: process.env,
   emptyStringAsUndefined: true,

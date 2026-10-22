@@ -7,6 +7,8 @@ export type ContentType = typeof content.$inferSelect.type;
  * its best-matching chunk.
  */
 export type ContentSearchResult = {
+  /** Database id of the matched content row. */
+  contentId: string;
   title: string;
   description: string;
   thumbnailUrl: string | null;

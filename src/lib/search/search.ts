@@ -66,6 +66,7 @@ export async function searchContent(
 
   const rows = await db
     .select({
+      contentId: content.id,
       title: content.title,
       description: content.description,
       thumbnailUrl: content.thumbnailUrl,
@@ -83,6 +84,7 @@ export async function searchContent(
     .limit(MAX_RESULTS);
 
   return rows.map((row) => ({
+    contentId: row.contentId,
     title: row.title,
     description: row.description,
     thumbnailUrl: row.thumbnailUrl,
