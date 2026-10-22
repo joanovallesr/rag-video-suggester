@@ -37,6 +37,51 @@ describe("normalizeCaptionCues", () => {
     ).toEqual([{ text: "outro", duration: 2, offset: 660 }]);
   });
 
+  it("detects milliseconds for a short srv3 transcript when the duration is unknown", () => {
+    expect(
+      normalizeCaptionCues(
+        [
+          { text: "hi", duration: 1_200, offset: 5_000 },
+          { text: "there", duration: 2_020, offset: 30_000 },
+        ],
+        0,
+      ),
+    ).toEqual([
+      { text: "hi", duration: 1.2, offset: 5 },
+      { text: "there", duration: 2.02, offset: 30 },
+    ]);
+  });
+
+  it("keeps classic cues in seconds when the duration is unknown", () => {
+    expect(
+      normalizeCaptionCues(
+        [
+          { text: "hi", duration: 1.2, offset: 5 },
+          { text: "there", duration: 2.02, offset: 30 },
+        ],
+        0,
+      ),
+    ).toEqual([
+      { text: "hi", duration: 1.2, offset: 5 },
+      { text: "there", duration: 2.02, offset: 30 },
+    ]);
+  });
+
+  it("keeps classic cues in seconds when one cue is unusually long", () => {
+    expect(
+      normalizeCaptionCues(
+        [
+          { text: "intro", duration: 5, offset: 0 },
+          { text: "music", duration: 90, offset: 300 },
+        ],
+        0,
+      ),
+    ).toEqual([
+      { text: "intro", duration: 5, offset: 0 },
+      { text: "music", duration: 90, offset: 300 },
+    ]);
+  });
+
   it("falls back to a 24-hour limit when the duration is unknown", () => {
     expect(
       normalizeCaptionCues(

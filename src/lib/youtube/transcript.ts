@@ -27,6 +27,10 @@ const DURATION_TOLERANCE = 1.5;
 const DURATION_SLACK_SECONDS = 60;
 // Only used when discovery could not read a duration.
 const FALLBACK_SECONDS_LIMIT = 24 * 60 * 60;
+// Classic cues are short phrases measured in seconds; an srv3 cue duration is
+// the same value in milliseconds. A median above this is strong evidence of
+// milliseconds when the video duration cannot settle the unit.
+const MAX_PLAUSIBLE_CUE_SECONDS = 60;
 
 /**
  * Fetch a video's caption cues, preferring the English track. YouTube's
@@ -57,7 +61,9 @@ export async function getCaptionCues(
 /**
  * Normalize cue timings to seconds. `youtube-transcript` returns srv3 cues in
  * milliseconds but classic cues in seconds, so the unit is inferred by
- * comparing the last offset with the video's known duration.
+ * comparing the last offset with the video's known duration. When the duration
+ * is unknown, cue durations disambiguate short srv3 transcripts whose offsets
+ * stay below the fallback limit.
  */
 export function normalizeCaptionCues(
   cues: RawCaptionCue[],
@@ -65,18 +71,53 @@ export function normalizeCaptionCues(
 ): CaptionCue[] {
   if (cues.length === 0) return [];
 
-  const maxOffset = Math.max(...cues.map((cue) => cue.offset));
-  const upperBound =
-    durationSeconds > 0
-      ? durationSeconds * DURATION_TOLERANCE + DURATION_SLACK_SECONDS
-      : FALLBACK_SECONDS_LIMIT;
-  const divisor = maxOffset > upperBound ? MILLISECONDS : 1;
+  const divisor = inferDivisor(cues, durationSeconds);
 
   return cues.map((cue) => ({
     text: cue.text,
     duration: cue.duration / divisor,
     offset: cue.offset / divisor,
   }));
+}
+
+/**
+ * The last offset settles the unit when the duration is known. Without one,
+ * cue durations are the best remaining signal: srv3 timings are whole
+ * milliseconds, while classic timings are parsed as seconds and are usually
+ * fractional.
+ */
+function inferDivisor(
+  cues: RawCaptionCue[],
+  durationSeconds: number,
+): number {
+  const maxOffset = Math.max(...cues.map((cue) => cue.offset));
+  const upperBound =
+    durationSeconds > 0
+      ? durationSeconds * DURATION_TOLERANCE + DURATION_SLACK_SECONDS
+      : FALLBACK_SECONDS_LIMIT;
+
+  if (maxOffset > upperBound) return MILLISECONDS;
+  if (durationSeconds > 0) return 1;
+
+  // A fractional timing can only be classic seconds.
+  if (
+    cues.some(
+      (cue) => !Number.isInteger(cue.offset) || !Number.isInteger(cue.duration),
+    )
+  ) {
+    return 1;
+  }
+
+  const medianDuration = median(cues.map((cue) => cue.duration));
+  return medianDuration > MAX_PLAUSIBLE_CUE_SECONDS ? MILLISECONDS : 1;
+}
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1
+    ? sorted[middle]
+    : (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
 function toCues(
